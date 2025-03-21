@@ -50,6 +50,21 @@ namespace OrderManagementApp.Repositories
             }
             return null;
         }
+        public List<Product> GetProductsStartingWith(string startsWith)
+        {
+            List<Product> filteredProducts = new List<Product>();
+
+            foreach (Product product in _product)
+            {
+                if (product.Name != null && product.Name.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase))
+                {
+                    filteredProducts.Add(product);
+                }
+            }
+
+            return filteredProducts;
+        }
+
 
         public bool UpdateProduct(Product updatedproduct)
         {

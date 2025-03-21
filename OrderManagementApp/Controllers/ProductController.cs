@@ -58,8 +58,14 @@ namespace OrderManagementApp.Controllers
 
             return Ok(ProductRepo.GetProduct(getproductId));
         }
-
         //add optional parameter that will get all products that start with Test
+        [HttpGet("getproductsstartingwith")]
+        public IActionResult GetProductsStartingWith(string startsWith)
+        {
+            return Ok(ProductRepo.GetProductsStartingWith(startsWith));
+        }
+
+        
 
     }
 }
