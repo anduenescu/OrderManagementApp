@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
+using OrderManagementApp.Services;
 
 namespace OrderManagementApp.Controllers
 {
@@ -10,11 +12,14 @@ namespace OrderManagementApp.Controllers
     public class UserController : ControllerBase
     {
         ProductRepository ProductRepository;
-        public UserController(ProductRepository productRepository)
+        UserService UserService;
+        public UserController(ProductRepository productRepository, UserService userService)
         {
             this.ProductRepository = productRepository;
+            UserService = userService;
         }
 
+        [Authorize]
         [HttpPost("addtocart")]
         public IActionResult AddToCart(int Id, int quantity)
         {
@@ -35,6 +40,13 @@ namespace OrderManagementApp.Controllers
             }
 
         }
-        
+
+        [HttpPost("adduser")]
+        public IActionResult AddUser(User user)
+        {
+
+            return Ok(UserService.CreateUser(user));
+        }
+
     }
 }

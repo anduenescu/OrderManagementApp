@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
 
@@ -30,14 +31,14 @@ namespace OrderManagementApp.Controllers
         }
 
 
-
+        
         [HttpPost("addproduct")]
         public IActionResult AddProduct(Product newproduct)
         {
 
             return Ok(ProductRepo.CreateProduct(newproduct));
         }
-
+        [Authorize]
         [HttpPut("editproduct")]
         public IActionResult EditProduct(Product editproduct)
         {
