@@ -11,11 +11,12 @@ namespace OrderManagementApp.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        ProductRepository ProductRepository;
-        UserService UserService;
+        private readonly ProductRepository ProductRepository;
+        private readonly UserService UserService;
+
         public UserController(ProductRepository productRepository, UserService userService)
         {
-            this.ProductRepository = productRepository;
+            ProductRepository = productRepository;
             UserService = userService;
         }
 
@@ -23,30 +24,46 @@ namespace OrderManagementApp.Controllers
         [HttpPost("addtocart")]
         public IActionResult AddToCart(int Id, int quantity)
         {
-            var product = ProductRepository.GetProduct(Id);
-            if (product.Stock >= quantity)
+            try
             {
+                var product = ProductRepository.GetProduct(Id);
+
+                if (product == null)
+                {
+                    return NotFound("Product not found.");
+                }
+
+                if (product.Stock < quantity)
+                {
+                    return BadRequest("Not enough stock.");
+                }
+
                 for (int i = 0; i < quantity; i++)
                 {
                     AppUser.Cart.Add(product);
-
                 }
-                product.Stock = product.Stock - quantity;
+
+                product.Stock -= quantity;
                 return Ok(AppUser.Cart);
             }
-            else
+            catch (Exception)
             {
-                return BadRequest("Not enough stock");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to add product to cart.");
             }
-
         }
 
         [HttpPost("adduser")]
         public IActionResult AddUser(User user)
         {
-
-            return Ok(UserService.CreateUser(user));
+            try
+            {
+                var result = UserService.CreateUser(user);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user.");
+            }
         }
-
     }
 }

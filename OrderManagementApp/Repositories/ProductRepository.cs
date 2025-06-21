@@ -1,7 +1,5 @@
-﻿
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using OrderManagementApp.Models;
-using System.Data.SqlClient;
 
 namespace OrderManagementApp.Repositories
 {
@@ -10,147 +8,215 @@ namespace OrderManagementApp.Repositories
         private List<Product> _product = new List<Product>();
         private string _connectionString = "Data Source=DESKTOP-ALBJ45J\\SQLEXPRESS;Initial Catalog=OrderManagementPlatform;Integrated Security=True;Trust Server Certificate=True";
         private CategoryRepository CategoryRepo;
-        
+
         public ProductRepository(CategoryRepository categoryRepo)
         {
             CategoryRepo = categoryRepo;
         }
 
-     
-        public bool CreateProduct(Product product) //added to database 
+        public bool CreateProduct(Product product)
         {
-            _product.Add(product);
-            using (SqlConnection connection = new SqlConnection(_connectionString)) 
+            try
             {
-                connection.Open();
-                string query = "insert into Products (ProductName, ProductDescription, Price, Stock,CategoryId) values (@name, @description, @price, @Stock, @CategoryID)";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                _product.Add(product);
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    command.Parameters.AddWithValue("@name", product.Name);
-                    command.Parameters.AddWithValue("@description", product.Description);
-                    command.Parameters.AddWithValue("@price", product.Price);
-                    command.Parameters.AddWithValue("@stock", product.Stock);
-                    command.Parameters.AddWithValue("@CategoryID", product.Category.Id);
+                    connection.Open();
+                    string query = "INSERT INTO Products (ProductName, ProductDescription, Price, Stock, CategoryId) VALUES (@name, @description, @price, @stock, @CategoryID)";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@name", product.Name);
+                        command.Parameters.AddWithValue("@description", product.Description);
+                        command.Parameters.AddWithValue("@price", product.Price);
+                        command.Parameters.AddWithValue("@stock", product.Stock);
+                        command.Parameters.AddWithValue("@CategoryID", product.Category.Id);
 
-                    command.ExecuteNonQuery();
+                        command.ExecuteNonQuery();
+                    }
                 }
+
+                return true;
             }
-            return true;
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while creating the product.");
+            }
         }
 
-        public bool DeleteProduct(int productId) // !!! add to database 
+        public bool DeleteProduct(int productId)
         {
-
-            
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                connection.Open();
-                string query = "delete Products WHERE ProductID = @Id";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-        
-                    command.Parameters.AddWithValue("@Id", productId);
-
-                    command.ExecuteNonQuery();
-                    return true;
+                    connection.Open();
+                    string query = "DELETE FROM Products WHERE ProductId = @Id";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Id", productId);
+                        command.ExecuteNonQuery();
+                        return true;
+                    }
                 }
-
             }
-
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while deleting the product.");
+            }
         }
 
         public List<Product> GetAllProducts()
         {
-            List<Product> result = new List<Product>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
+                List<Product> result = new List<Product>();
 
-                int categoryId = 0; 
-                connection.Open();
-                string query = "select * from Products";
-                string queryCategory = "select * from Categories";
-
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    using (SqlDataReader reader = command.ExecuteReader())
+                    connection.Open();
+                    string query = "SELECT * FROM Products";
+                    using (SqlCommand command = new SqlCommand(query, connection))
                     {
-                        while (reader.Read())
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            Product Current = new Product
+                            while (reader.Read())
                             {
-                                Name = reader.GetString(reader.GetOrdinal("ProductName")),
-                                Description = reader.GetString(reader.GetOrdinal("ProductDescription")),
-                                Price = reader.GetDecimal(reader.GetOrdinal("Price")),
-                                Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
-                                Id = reader.GetInt32(reader.GetOrdinal("ProductId"))
-                            };
-                            categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
-                            Current.Category = CategoryRepo.GetCategoryById(categoryId);
+                                Product current = new Product
+                                {
+                                    Name = reader.GetString(reader.GetOrdinal("ProductName")),
+                                    Description = reader.GetString(reader.GetOrdinal("ProductDescription")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Stock = reader.GetInt32(reader.GetOrdinal("Stock")),
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId"))
+                                };
+                                int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
+                                current.Category = CategoryRepo.GetCategoryById(categoryId);
 
-                            result.Add(Current);
-                            
-
+                                result.Add(current);
+                            }
                         }
                     }
                 }
-            }
-                    return result;
 
+                return result;
+            }
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while retrieving all products.");
+            }
         }
 
-        
         public Product GetProduct(int productId)
         {
-            foreach (Product product in _product)
+            try
             {
-                if (product.Id == productId)
+                Product result = null;
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    return product;
+                    connection.Open();
+                    string query = "SELECT * FROM Products WHERE ProductId = @Id";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Id", productId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Product product = new Product
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    Name = reader.GetString(reader.GetOrdinal("ProductName")),
+                                    Description = reader.GetString(reader.GetOrdinal("ProductDescription")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Stock = reader.GetInt32(reader.GetOrdinal("Stock"))
+                                };
+                                int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
+                                product.Category = CategoryRepo.GetCategoryById(categoryId);
+
+                                result = product;
+                            }
+                        }
+                    }
                 }
+
+                return result;
             }
-            return null;
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while retrieving the product.");
+            }
         }
+
         public List<Product> GetProductsStartingWith(string startsWith)
         {
-            List<Product> filteredProducts = new List<Product>();
-
-            foreach (Product product in GetAllProducts())
+            try
             {
-                if (product.Name != null && product.Name.StartsWith(startsWith, StringComparison.OrdinalIgnoreCase))
-                {
-                    filteredProducts.Add(product);
-                }
-            } 
+                List<Product> filteredProducts = new List<Product>();
 
-            return filteredProducts;          
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                    string query = "SELECT * FROM Products WHERE ProductName LIKE @Prefix";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Prefix", startsWith + "%");
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Product product = new Product
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("ProductId")),
+                                    Name = reader.GetString(reader.GetOrdinal("ProductName")),
+                                    Description = reader.GetString(reader.GetOrdinal("ProductDescription")),
+                                    Price = reader.GetDecimal(reader.GetOrdinal("Price")),
+                                    Stock = reader.GetInt32(reader.GetOrdinal("Stock"))
+                                };
+                                int categoryId = reader.GetInt32(reader.GetOrdinal("CategoryId"));
+                                product.Category = CategoryRepo.GetCategoryById(categoryId);
+
+                                filteredProducts.Add(product);
+                            }
+                        }
+                    }
+                }
+
+                return filteredProducts;
+            }
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while searching products.");
+            }
         }
 
-                     
-        public bool UpdateProduct(Product updatedproduct)
+        public bool UpdateProduct(Product updatedProduct)
         {
-            //Product p = GetProduct(updatedproduct.Id);
-            // TO do check if the product exists 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
+            try
             {
-                connection.Open();
-                string query = "update Products set ProductName = @name, ProductDescription = @description, Price=@price, Stock=@Stock, CategoryId=@CategoryID WHERE ProductID = @Id";
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlConnection connection = new SqlConnection(_connectionString))
                 {
-                    command.Parameters.AddWithValue("@name", updatedproduct.Name);
-                    command.Parameters.AddWithValue("@description", updatedproduct.Description);
-                    command.Parameters.AddWithValue("@price", updatedproduct.Price);
-                    command.Parameters.AddWithValue("@stock", updatedproduct.Stock);
-                    command.Parameters.AddWithValue("@CategoryID", updatedproduct.Category.Id);
-                    command.Parameters.AddWithValue("@Id", updatedproduct.Id);
+                    connection.Open();
+                    string query = "UPDATE Products SET ProductName = @name, ProductDescription = @description, Price = @price, Stock = @stock, CategoryId = @CategoryID WHERE ProductId = @Id";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@name", updatedProduct.Name);
+                        command.Parameters.AddWithValue("@description", updatedProduct.Description);
+                        command.Parameters.AddWithValue("@price", updatedProduct.Price);
+                        command.Parameters.AddWithValue("@stock", updatedProduct.Stock);
+                        command.Parameters.AddWithValue("@CategoryID", updatedProduct.Category.Id);
+                        command.Parameters.AddWithValue("@Id", updatedProduct.Id);
 
-                    command.ExecuteNonQuery();
-                    return true;
+                        command.ExecuteNonQuery();
+                        return true;
+                    }
                 }
-
             }
-
-
+            catch (Exception)
+            {
+                throw new Exception("An error occurred while updating the product.");
+            }
         }
     }
 }
