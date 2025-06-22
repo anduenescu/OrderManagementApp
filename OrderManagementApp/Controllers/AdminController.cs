@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using OrderManagementApp.Exceptions;
 using OrderManagementApp.Models;
+using OrderManagementApp.Repositories;
 using OrderManagementApp.Services;
 
 namespace OrderManagementApp.Controllers
@@ -13,12 +14,15 @@ namespace OrderManagementApp.Controllers
     {
         private readonly UserService _userService; // added 06/07
         private readonly ProductService _productService; // added 06/07
+        private readonly OrderRepository _orderRepo;
 
 
-        public AdminController(UserService userService, ProductService productService)
+
+        public AdminController(UserService userService, ProductService productService, OrderRepository orderRepo) // To check with lucas
         {
             _userService = userService;
             _productService = productService;
+            _orderRepo = orderRepo;
         }
 
         [HttpGet("test")] // added 06/07
@@ -101,6 +105,20 @@ namespace OrderManagementApp.Controllers
             {
                 return StatusCode(500, "Failed to retrieve products.");
             }
+        }
+
+        [HttpGet("top-products")]
+        public IActionResult GetTopProducts()
+        {
+            var topProducts = _orderRepo.GetTopSellingProducts();
+            return Ok(topProducts);
+        }
+
+        [HttpGet("monthly-sales")]
+        public IActionResult GetMonthlySales()
+        {
+            var report = _orderRepo.GetMonthlySalesReport();
+            return Ok(report);
         }
     }
 }
