@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OrderManagementApp.Exceptions;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
+using OrderManagementApp.Services;
 
 namespace OrderManagementApp.Controllers
 {
@@ -8,22 +10,44 @@ namespace OrderManagementApp.Controllers
     [ApiController]
     public class OrdersController : Controller
     {
-        OrderRepository OrderRepo;
-        
-        public OrdersController(OrderRepository orderRepo)
+        OrderService _orderService;
+
+        public OrdersController(OrderService orderService)
         {
-            OrderRepo = orderRepo;
+            _orderService = orderService;
         }
 
         [HttpPost("addorder")]
         public IActionResult AddOrder(Order neworder)
         {
+            try
+            {
+                var result = _orderService.PlaceOrder(neworder);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create order.");
+            }
+        }
 
-            return Ok(OrderRepo.CreateOrder(neworder));
+        [HttpPost("ordercart")]
+        public IActionResult OrderCart(int userId)
+        {
+            try
+            {
+                var result = _orderService.OrderCart(userId);
+                return Ok(result);
+            }
+            catch(CleanCartException ex)
+            {
+                return StatusCode(StatusCodes.Status206PartialContent, ex.Message);
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create order.");
+            }
         }
     }
-
-
-    
-
 }

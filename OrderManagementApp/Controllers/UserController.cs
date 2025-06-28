@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient.DataClassification;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
 using OrderManagementApp.Services;
@@ -11,42 +12,39 @@ namespace OrderManagementApp.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        ProductRepository ProductRepository;
-        UserService UserService;
-        public UserController(ProductRepository productRepository, UserService userService)
+        private readonly UserService UserService;
+
+        public UserController(UserService userService)
         {
-            this.ProductRepository = productRepository;
             UserService = userService;
         }
 
         [Authorize]
         [HttpPost("addtocart")]
-        public IActionResult AddToCart(int Id, int quantity)
+        public IActionResult AddToCart(int userId, int IdProduct, int quantity)
         {
-            var product = ProductRepository.GetProduct(Id);
-            if (product.Stock >= quantity)
+            try
             {
-                for (int i = 0; i < quantity; i++)
-                {
-                    AppUser.Cart.Add(product);
-
-                }
-                product.Stock = product.Stock - quantity;
-                return Ok(AppUser.Cart);
-            }
-            else
+                UserService.AddToCart(userId, IdProduct,  quantity);
+                return Ok();            }
+            catch (Exception)
             {
-                return BadRequest("Not enough stock");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to add product to cart.");
             }
-
         }
 
         [HttpPost("adduser")]
         public IActionResult AddUser(User user)
         {
-
-            return Ok(UserService.CreateUser(user));
+            try
+            {
+                var result = UserService.CreateUser(user);
+                return Ok(result);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create user.");
+            }
         }
-
     }
 }

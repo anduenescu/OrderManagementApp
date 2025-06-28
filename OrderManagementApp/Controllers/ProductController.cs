@@ -1,72 +1,76 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderManagementApp.Services;
 using OrderManagementApp.Models;
-using OrderManagementApp.Repositories;
+using OrderManagementApp.Exceptions;
 
-
-namespace OrderManagementApp.Controllers
+[Route("api/products")]
+[ApiController]
+[Authorize] // All endpoints require authentication unless marked with [AllowAnonymous]
+public class ProductController : ControllerBase
 {
-    [Route("api/product")]
-    [ApiController]
-    public class ProductController : Controller
+    private readonly ProductService _productService;
+
+    public ProductController(ProductService productService)
     {
-        ProductRepository ProductRepo;
-        public ProductController(ProductRepository productRepo)
+        _productService = productService;
+    }
+
+    [HttpGet]
+    public IActionResult GetAllProducts()
+    {
+        try
         {
-            ProductRepo = productRepo;
+            var products = _productService.GetAllProducts();
+            return Ok(products);
         }
-
-        public IActionResult Index()
+        catch (Exception)
         {
-            return Ok("Hello World!");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Failed to retrieve products.");
         }
+    }
 
-
-
-        [HttpGet("products")]
-
-        public IActionResult Products()
+    [HttpGet("{id}")]
+    public IActionResult GetProductById(int id)
+    {
+        try
         {
-            return Ok(ProductRepo.GetAllProducts());
+            var product = _productService.GetProductById(id);
+            return product != null ? Ok(product) : NotFound("Product not found.");
         }
-
-
-        
-        [HttpPost("addproduct")]
-        public IActionResult AddProduct(Product newproduct)
+        catch (IdFormatException ex)
         {
-
-            return Ok(ProductRepo.CreateProduct(newproduct));
+            return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
         }
-        [Authorize]
-        [HttpPut("editproduct")]
-        public IActionResult EditProduct(Product editproduct)
+        catch (Exception)
         {
-
-            return Ok(ProductRepo.UpdateProduct(editproduct));
+            return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error retrieving product.");
         }
+    }
 
-        [HttpDelete("deleteproduct")]
-        public IActionResult DeleteProduct(int deleteproductId)
+    [HttpGet("search")]
+    public IActionResult GetProductsStartingWith([FromQuery] string prefix)
+    {
+        try
         {
+            if (string.IsNullOrEmpty(prefix))
+            {
+                return StatusCode(StatusCodes.Status406NotAcceptable, "Prefix cannot be empty.");
+            }
 
-            return Ok(ProductRepo.DeleteProduct(deleteproductId));
+            var result = _productService.GetProductsStartingWith(prefix);
+            return Ok(result ?? new List<Product>());
         }
-
-        [HttpGet("getproduct")]
-        public IActionResult GetProduct(int getproductId)
+        catch (Exception)
         {
-
-            return Ok(ProductRepo.GetProduct(getproductId));
+            return StatusCode(StatusCodes.Status500InternalServerError, "Failed to search products.");
         }
-        //add optional parameter that will get all products that start with Test
-        [HttpGet("getproductsstartingwith")]
-        public IActionResult GetProductsStartingWith(string startsWith)
-        {
-            return Ok(ProductRepo.GetProductsStartingWith(startsWith));
-        }
+    }
 
-        
-
+    [HttpGet("status")]
+    [AllowAnonymous]
+    public IActionResult Index()
+    {
+        return Ok("Product API is alive");
     }
 }

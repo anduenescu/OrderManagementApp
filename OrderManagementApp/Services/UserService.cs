@@ -1,52 +1,105 @@
-﻿using Microsoft.Identity.Client;
-using OrderManagementApp.Repositories;
+﻿using OrderManagementApp.Repositories;
 using OrderManagementApp.Models;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Identity;
 using System.Text;
+
 namespace OrderManagementApp.Services
 {
     public class UserService
     {
-        UserRepository UserRepository;
-        public UserService(UserRepository userRepository)
+        private readonly UserRepository UserRepository;
+        private readonly ProductService ProductService;
+
+        public UserService(UserRepository userRepository, ProductService productService)
         {
             UserRepository = userRepository;
-
+            ProductService = productService;
         }
+
         public bool CreateUser(User user)
         {
-            user.PasswordHash = HashPassword(user.PasswordHash, Encoding.UTF8.GetBytes(user.Username)); 
-            return UserRepository.CreateUser(user);
+            try
+            {
+                user.PasswordHash = HashPassword(user.PasswordHash, Encoding.UTF8.GetBytes(user.Username));
+                return UserRepository.CreateUser(user);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to create user.");
+            }
+        }
 
+        public User? Login(string username, string password)
+        {
+            try
+            {
+                password = HashPassword(password, Encoding.UTF8.GetBytes(username));
+                return UserRepository.CheckLogin(username, password);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Login failed due to a system error.");
+            }
+        }
+
+        public List<User> GetAllUsers()
+        {
+            try
+            {
+                return UserRepository.GetAllUsers();
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to retrieve user list.");
+            }
         }
 
         private string HashPassword(string password, byte[] salt)
         {
-            // Generate a cryptographic random salt
-            //salt = RandomNumberGenerator.GetBytes(16); // 128-bit salt
-
-            // Derive a 256-bit subkey (use 100,000 iterations)
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
-            byte[] hash = pbkdf2.GetBytes(32); // 256-bit hash
-
-            return Convert.ToBase64String(hash);
+            try
+            {
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] hash = pbkdf2.GetBytes(32);
+                return Convert.ToBase64String(hash);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error hashing password: " + ex.Message);
+                throw new ApplicationException("Password hashing failed.");
+            }
         }
 
         private bool VerifyPassword(string password, string hashedPassword, byte[] salt)
         {
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
-            byte[] hashToCompare = pbkdf2.GetBytes(32);
-
-            string computedHash = Convert.ToBase64String(hashToCompare);
-            return hashedPassword == computedHash;
+            try
+            {
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] hashToCompare = pbkdf2.GetBytes(32);
+                string computedHash = Convert.ToBase64String(hashToCompare);
+                return hashedPassword == computedHash;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error verifying password: " + ex.Message);
+                return false; // fallback: fail gracefully
+            }
         }
 
-        public User? Login(string username, string password) 
+        public bool AddToCart(int userId, int idProduct, int quantity)
         {
-           password = HashPassword(password, Encoding.UTF8.GetBytes(username));
-           return UserRepository.CheckLogin(username, password);
+            try
+            {
+                //check if the product can be added to the cart
+                if (!ProductService.IsInStock(idProduct, quantity))
+                    return false;
 
+                return UserRepository.addToCart(userId, idProduct, quantity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to add product to cart");
+
+            }
         }
     }
 }
