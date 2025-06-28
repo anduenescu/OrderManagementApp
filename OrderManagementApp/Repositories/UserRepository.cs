@@ -109,5 +109,38 @@ namespace OrderManagementApp.Repositories
                 throw new Exception("An error occurred while retrieving all users.");
             }
         }
+
+        internal bool addToCart(int userId, int idProduct, int quantity)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                   
+                        string insertCartItemQuery = @"
+                    INSERT INTO CartItems (ProductId, UserId, Quantity)
+                    VALUES (@productId, @userId, @quantity)";
+
+                        using (SqlCommand itemCmd = new SqlCommand(insertCartItemQuery, connection))
+                        {
+                            itemCmd.Parameters.AddWithValue("@productId", idProduct);
+                            itemCmd.Parameters.AddWithValue("@userId", userId);
+                            itemCmd.Parameters.AddWithValue("@quantity", quantity);
+
+                            itemCmd.ExecuteNonQuery();
+                        }
+                   
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error creating order: " + ex.Message);
+                return false;
+            }
+        }
     }
 }

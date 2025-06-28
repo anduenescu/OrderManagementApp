@@ -8,10 +8,12 @@ namespace OrderManagementApp.Services
     public class UserService
     {
         private readonly UserRepository UserRepository;
+        private readonly ProductService ProductService;
 
-        public UserService(UserRepository userRepository)
+        public UserService(UserRepository userRepository, ProductService productService)
         {
             UserRepository = userRepository;
+            ProductService = productService;
         }
 
         public bool CreateUser(User user)
@@ -54,17 +56,50 @@ namespace OrderManagementApp.Services
 
         private string HashPassword(string password, byte[] salt)
         {
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
-            byte[] hash = pbkdf2.GetBytes(32);
-            return Convert.ToBase64String(hash);
+            try
+            {
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] hash = pbkdf2.GetBytes(32);
+                return Convert.ToBase64String(hash);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error hashing password: " + ex.Message);
+                throw new ApplicationException("Password hashing failed.");
+            }
         }
 
         private bool VerifyPassword(string password, string hashedPassword, byte[] salt)
         {
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
-            byte[] hashToCompare = pbkdf2.GetBytes(32);
-            string computedHash = Convert.ToBase64String(hashToCompare);
-            return hashedPassword == computedHash;
+            try
+            {
+                using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100_000, HashAlgorithmName.SHA256);
+                byte[] hashToCompare = pbkdf2.GetBytes(32);
+                string computedHash = Convert.ToBase64String(hashToCompare);
+                return hashedPassword == computedHash;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error verifying password: " + ex.Message);
+                return false; // fallback: fail gracefully
+            }
+        }
+
+        public bool AddToCart(int userId, int idProduct, int quantity)
+        {
+            try
+            {
+                //check if the product can be added to the cart
+                if (!ProductService.IsInStock(idProduct, quantity))
+                    return false;
+
+                return UserRepository.addToCart(userId, idProduct, quantity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to add product to cart");
+
+            }
         }
     }
 }

@@ -10,6 +10,6 @@ namespace OrderManagementApp.Repositories
         public bool UpdateProduct(Product product);
         public bool DeleteProduct(int productId);
         public Product GetProduct(int productId);
-
+        
     }
 }

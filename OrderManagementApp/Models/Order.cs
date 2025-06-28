@@ -7,7 +7,7 @@
 
         public DateTime Date {  get; set; }
         public string Status { get; set; }
-        public AppUser User { get; set; }
-        public List<CartItem> Items { get; set; }
+        public int UserId { get; set; }
+        public List<OrderItem> Items { get; set; }
     }
 }

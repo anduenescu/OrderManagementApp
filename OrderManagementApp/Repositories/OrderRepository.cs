@@ -33,7 +33,7 @@ namespace OrderManagementApp.Repositories
                     {
                         orderCmd.Parameters.AddWithValue("@totalprice", order.TotalPrice);
                         orderCmd.Parameters.AddWithValue("@status", order.Status);
-                        orderCmd.Parameters.AddWithValue("@userid", order.User.Id);
+                        orderCmd.Parameters.AddWithValue("@userid", order.UserId);
 
                         newOrderId = (int)orderCmd.ExecuteScalar();
                     }
@@ -42,7 +42,7 @@ namespace OrderManagementApp.Repositories
                     foreach (var item in order.Items)
                     {
                         string insertCartItemQuery = @"
-                    INSERT INTO CartItems (ProductId, OrderId, Quantity)
+                    INSERT INTO OrderItem (ProductId, OrderId, Quantity)
                     VALUES (@productId, @orderId, @quantity)";
 
                         using (SqlCommand itemCmd = new SqlCommand(insertCartItemQuery, connection))
@@ -145,11 +145,83 @@ namespace OrderManagementApp.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine("❌ Error generating monthly sales report: " + ex.Message);
+                Console.WriteLine("Error generating monthly sales report: " + ex.Message);
             }
 
             return result;
         }
 
+           
+
+        public List<OrderItem> GetUserCart(int userId)
+        {
+            List<OrderItem> result = new List<OrderItem>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"SELECT * FROM CartItems WHERE userId = @userId";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@userId", userId);
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Product product = ProductRepo.GetProduct(reader.GetInt32(1));
+
+                                OrderItem item = new OrderItem
+                                {
+                                    Product = product,
+                                    Quantity = reader.GetInt32(2)
+                                };
+
+                                result.Add(item);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error generating CartItem: " + ex.Message);
+            }
+
+            return result;
+        }
+
+        public bool CleanCart(int userId)
+        {
+            List<OrderItem> result = new List<OrderItem>();
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+
+                    string query = @"DELETE FROM CartItems WHERE userId = @userId";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@userId", userId);
+
+                        command.ExecuteNonQuery();
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error cleaning CartItem: " + ex.Message);
+                return false;
+            }
+
+        }
     }
 }

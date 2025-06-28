@@ -15,14 +15,16 @@ namespace OrderManagementApp.Controllers
         private readonly UserService _userService; // added 06/07
         private readonly ProductService _productService; // added 06/07
         private readonly OrderRepository _orderRepo;
+        private readonly OrderService _orderService;
 
 
 
-        public AdminController(UserService userService, ProductService productService, OrderRepository orderRepo) // To check with lucas
+        public AdminController(UserService userService, ProductService productService, OrderRepository orderRepo, OrderService orderService) // To check with lucas
         {
             _userService = userService;
             _productService = productService;
             _orderRepo = orderRepo;
+            _orderService = orderService;
         }
 
         [HttpGet("test")] // added 06/07
@@ -110,15 +112,31 @@ namespace OrderManagementApp.Controllers
         [HttpGet("top-products")]
         public IActionResult GetTopProducts()
         {
-            var topProducts = _orderRepo.GetTopSellingProducts();
-            return Ok(topProducts);
+            try
+            {
+                var topProducts = _orderService.GetTopSellingProducts();
+                return Ok(topProducts);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to retrieve top products.");
+            }
         }
 
         [HttpGet("monthly-sales")]
         public IActionResult GetMonthlySales()
         {
-            var report = _orderRepo.GetMonthlySalesReport();
-            return Ok(report);
+            try
+            {
+                var report = _orderService.GetMonthlySalesReport();
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to retrieve monthly sales report.");
+            }
         }
     }
 }

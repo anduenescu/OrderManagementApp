@@ -13,6 +13,26 @@ namespace OrderManagementApp.Services
             _productRepo = productRepo;
         }
 
+        public bool IsInStock(int productId, int quantity)
+        {
+            try
+            {
+                Product product =  _productRepo.GetProduct(productId);
+                if (product == null)
+                {
+                    return false;
+                }
+
+                if(product.Stock >=  quantity)
+                    return true;
+
+                return false;
+            }
+            catch (Exception)
+            {
+                throw new Exception("Failed to fetch product.");
+            }
+        }
         // Admin-level operations
         public bool AddProduct(Product product)
         {

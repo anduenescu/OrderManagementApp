@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient.DataClassification;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
 using OrderManagementApp.Services;
@@ -11,41 +12,21 @@ namespace OrderManagementApp.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly ProductRepository ProductRepository;
         private readonly UserService UserService;
 
-        public UserController(ProductRepository productRepository, UserService userService)
+        public UserController(UserService userService)
         {
-            ProductRepository = productRepository;
             UserService = userService;
         }
 
         [Authorize]
         [HttpPost("addtocart")]
-        public IActionResult AddToCart(int Id, int quantity)
+        public IActionResult AddToCart(int userId, int IdProduct, int quantity)
         {
             try
             {
-                var product = ProductRepository.GetProduct(Id);
-
-                if (product == null)
-                {
-                    return NotFound("Product not found.");
-                }
-
-                if (product.Stock < quantity)
-                {
-                    return BadRequest("Not enough stock.");
-                }
-
-                for (int i = 0; i < quantity; i++)
-                {
-                    AppUser.Cart.Add(product);
-                }
-
-                product.Stock -= quantity;
-                return Ok(AppUser.Cart);
-            }
+                UserService.AddToCart(userId, IdProduct,  quantity);
+                return Ok();            }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Failed to add product to cart.");

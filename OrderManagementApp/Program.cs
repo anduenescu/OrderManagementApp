@@ -2,7 +2,6 @@
 using System.Collections;
 using OrderManagementApp.Models;
 using OrderManagementApp.Repositories;
-using OrderManagementApp.Data;
 using OrderManagementApp.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,8 +13,6 @@ using System.Security.Cryptography;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -37,6 +34,7 @@ builder.Services.AddSingleton<OrderRepository>();
 builder.Services.AddSingleton<UserRepository>();
 builder.Services.AddSingleton<UserService>();
 builder.Services.AddSingleton<ProductService>();
+builder.Services.AddSingleton<OrderService>();
 
 var app = builder.Build();
 
