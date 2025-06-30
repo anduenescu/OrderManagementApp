@@ -173,13 +173,12 @@ POST /api/order/ordercart?userId=5
 
 #### Steps:
 
-- Gets cart items from repository
-
-- Validates stock via service
-
-- Calculates total
-
-- Places order
+1. Gets cart items from repository
+2. Validates stock via service
+3. Calculates total
+4. Places order
+5. (TODO) Stock is not yet decremented
+6. Cleans cart
 
 ---
 
