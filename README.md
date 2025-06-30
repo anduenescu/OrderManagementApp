@@ -1,6 +1,14 @@
 # OrderManagementApp
 
-OrderManagementApp is a RESTful Web API built with ASP.NET Core 8 that simulates an e-commerce backend. It allows user authentication, product management, order processing, and sales reporting. The architecture emphasizes clean OOP principles, separation of concerns, and secure API access through JWT-based authentication.
+The OrderManagementApp is a RESTful Web API built using ASP.NET Core 8. It simulates a basic e-commerce backend and supports operations such as:
+
+- User registration and login (JWT authentication)
+
+- Product browsing, searching, and management
+
+- Cart operations (adding to cart)
+
+- Order placement and reporting (top products, monthly sales)
 
 ## Technologies Used
 
@@ -29,6 +37,19 @@ The system follows a layered architecture that enforces single-responsibility an
 ![Components](https://github.com/anduenescu/OrderManagementApp/blob/master/ArchComponents.png)
 
 ---
+### Architectural Context
+
+This app follows a layered architecture:
+
+- Controller Layer – API entry points
+
+- Service Layer – Business logic and rule enforcement
+
+- Repository Layer – ADO.NET-based SQL operations
+
+- Model Layer – Domain entities and DTOs
+
+- Authentication Layer – JWT token-based access control
 
 ## Object-Oriented Design
 
@@ -118,16 +139,40 @@ In `OrderService.OrderCart(userId)`:
 These reports are served using DTOs (`TopProductDto`, `MonthlySalesDto`) to avoid exposing full model data.
 
 ---
+### IMPLEMENTATION EXAMPLES
 
-## API Testing
+#### Basic Usage
 
-A complete Postman collection is available, covering:
-- User login
-- Product CRUD operations
-- Order placement
-- Reporting endpoints
+Logging in to get a token:
 
-_To be added: link to Postman collection or `.json` export_
+POST /api/auth/login
+
+Content-Type: application/json
+```json
+{
+  "username": "admin",
+  "password": "adminpassword"
+}
+```
+
+Using the token:
+
+GET /api/products
+Authorization: Bearer <your_token>
+
+#### Advanced Scenario: Order Cart
+
+POST /api/order/ordercart?userId=5
+
+#### Steps:
+
+- Gets cart items from repository
+
+- Validates stock via service
+
+- Calculates total
+
+- Places order
 
 ---
 
@@ -149,17 +194,6 @@ _To be added: link to Postman collection or `.json` export_
 - Optimized queries using SQL joins and aggregates
 - DTOs reduce bandwidth and improve performance
 - Static connection strings (to be moved to `appsettings.json` for production use)
-
----
-
-## Testing
-
-Unit testing (xUnit) is planned for the following:
-- `UserService` logic
-- Order placement and reporting
-- Authentication flow
-
-_Not yet implemented at the time of writing_
 
 ---
 
