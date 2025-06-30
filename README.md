@@ -10,6 +10,8 @@ The OrderManagementApp is a RESTful Web API built using ASP.NET Core 8. It simul
 
 - Order placement and reporting (top products, monthly sales)
 
+Please refer to `HowToUse.md` for setup and usage instructions, and `APIEndpointOverview.md` for a complete list of available API endpoints.
+
 ## Technologies Used
 
 ### Backend
