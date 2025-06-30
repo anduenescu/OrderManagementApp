@@ -111,16 +111,18 @@ In `OrderService.OrderCart(userId)`:
 - Retrieves cart items using `_orderRepo.GetUserCart(userId)`
 - Validates stock using `ProductService.IsInStock(...)`
 - Calculates total price and builds an `Order` object
-- Calls `_orderRepo.CreateOrder(order)` to persist it
+- Calls `_orderRepo.CreateOrder(order)` to persist the order and its items
+- (TODO) Does not currently update stock levels after order placement
 - Calls `_orderRepo.CleanCart(userId)` to clear the user's cart
+- Throws `CleanCartException` if cart clean-up fails
 
 #### Repository Layer
-- `OrderRepository.GetUserCart` pulls data from `CartItems` table and joins with product info
+- `OrderRepository.GetUserCart` pulls data from `CartItems` and joins with product info via `ProductRepository.GetProduct`
 - `CreateOrder` inserts into `Orders` and `OrderItem` tables
-- `CleanCart` removes records from the `CartItems` table for the user
+- `CleanCart` deletes entries from the `CartItems` table for the given user
 
 #### Database Layer
-- Executes the underlying SQL commands (`INSERT`, `SELECT`, `DELETE`) to store and manage the cart/order lifecycle
+- Executes `INSERT` (Orders, OrderItems), `SELECT` (CartItems), and `DELETE` (CartItems) SQL commands to manage the full cart-to-order lifecycle
 
 ---
 
