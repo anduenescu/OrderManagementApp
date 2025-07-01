@@ -1,5 +1,6 @@
--- Drop existing DB if present WARNING: This script drops and recreates the entire OrderManagementPlatform database
+
  USE master;
+-- Drop existing DB if present, This part drops the entire OrderManagementPlatform database
 /* GO
 DROP DATABASE IF EXISTS [OrderManagementPlatform];
 GO
