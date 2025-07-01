@@ -82,7 +82,7 @@ POST `/api/auth/login`
 ```
 Use the returned token in all subsequent requests like this:
 `Authorization: Bearer {your_token_here}`
-### 7. Try Key Endpoints - more endpoints in the APIEndpointOVerview.md file 
+### 7. Try Key Endpoints - more endpoints in the APIEndpointOverview.md file 
 - Method	Endpoint	Description
 - GET	`/api/products/status`	Public test endpoint
 - GET	`/api/products`	List all products (JWT required)
