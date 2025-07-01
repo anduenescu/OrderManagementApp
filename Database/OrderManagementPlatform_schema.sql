@@ -96,6 +96,59 @@ CREATE TABLE [dbo].[__EFMigrationsHistory](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [dbo].[Users]    Script Date: 6/28/2025 1:49:34 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Users](
+	[UserId] [int] IDENTITY(1,1) NOT NULL,
+	[UserName] [varchar](50) NULL,
+	[UserPassword] [varchar](250) NULL,
+	[Role] [nvarchar](50) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[UserId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Orders] ADD  DEFAULT (sysdatetime()) FOR [Date]
+GO
+ALTER TABLE [dbo].[Users] ADD  DEFAULT ('User') FOR [Role]
+GO
+ALTER TABLE [dbo].[CartItems]  WITH CHECK ADD FOREIGN KEY([ProductId])
+REFERENCES [dbo].[Products] ([ProductId])
+GO
+ALTER TABLE [dbo].[CartItems]  WITH CHECK ADD  CONSTRAINT [FK_CartItems_User] FOREIGN KEY([userId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+ALTER TABLE [dbo].[CartItems] CHECK CONSTRAINT [FK_CartItems_User]
+GO
+ALTER TABLE [dbo].[OrderItem]  WITH CHECK ADD  CONSTRAINT [FK_Orders] FOREIGN KEY([OrderId])
+REFERENCES [dbo].[Orders] ([OrderId])
+GO
+ALTER TABLE [dbo].[OrderItem] CHECK CONSTRAINT [FK_Orders]
+GO
+ALTER TABLE [dbo].[OrderItem]  WITH CHECK ADD  CONSTRAINT [FK_Products] FOREIGN KEY([ProductId])
+REFERENCES [dbo].[Products] ([ProductId])
+GO
+ALTER TABLE [dbo].[OrderItem] CHECK CONSTRAINT [FK_Products]
+GO
+ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_UserId] FOREIGN KEY([UserId])
+REFERENCES [dbo].[Users] ([UserId])
+GO
+ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_UserId]
+GO
+ALTER TABLE [dbo].[Products]  WITH CHECK ADD  CONSTRAINT [FK_Category] FOREIGN KEY([CategoryId])
+REFERENCES [dbo].[Categories] ([CategoryID])
+GO
+ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [FK_Category]
+GO
+USE [master]
+GO
+ALTER DATABASE [OrderManagementPlatform] SET  READ_WRITE 
+GO
+	
 /****** Object:  Table [dbo].[CartItems]    Script Date: 6/28/2025 1:49:34 PM ******/
 SET ANSI_NULLS ON
 GO
@@ -177,58 +230,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 6/28/2025 1:49:34 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[Users](
-	[UserId] [int] IDENTITY(1,1) NOT NULL,
-	[UserName] [varchar](50) NULL,
-	[UserPassword] [varchar](250) NULL,
-	[Role] [nvarchar](50) NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[UserId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-ALTER TABLE [dbo].[Orders] ADD  DEFAULT (sysdatetime()) FOR [Date]
-GO
-ALTER TABLE [dbo].[Users] ADD  DEFAULT ('User') FOR [Role]
-GO
-ALTER TABLE [dbo].[CartItems]  WITH CHECK ADD FOREIGN KEY([ProductId])
-REFERENCES [dbo].[Products] ([ProductId])
-GO
-ALTER TABLE [dbo].[CartItems]  WITH CHECK ADD  CONSTRAINT [FK_CartItems_User] FOREIGN KEY([userId])
-REFERENCES [dbo].[Users] ([UserId])
-GO
-ALTER TABLE [dbo].[CartItems] CHECK CONSTRAINT [FK_CartItems_User]
-GO
-ALTER TABLE [dbo].[OrderItem]  WITH CHECK ADD  CONSTRAINT [FK_Orders] FOREIGN KEY([OrderId])
-REFERENCES [dbo].[Orders] ([OrderId])
-GO
-ALTER TABLE [dbo].[OrderItem] CHECK CONSTRAINT [FK_Orders]
-GO
-ALTER TABLE [dbo].[OrderItem]  WITH CHECK ADD  CONSTRAINT [FK_Products] FOREIGN KEY([ProductId])
-REFERENCES [dbo].[Products] ([ProductId])
-GO
-ALTER TABLE [dbo].[OrderItem] CHECK CONSTRAINT [FK_Products]
-GO
-ALTER TABLE [dbo].[Orders]  WITH CHECK ADD  CONSTRAINT [FK_UserId] FOREIGN KEY([UserId])
-REFERENCES [dbo].[Users] ([UserId])
-GO
-ALTER TABLE [dbo].[Orders] CHECK CONSTRAINT [FK_UserId]
-GO
-ALTER TABLE [dbo].[Products]  WITH CHECK ADD  CONSTRAINT [FK_Category] FOREIGN KEY([CategoryId])
-REFERENCES [dbo].[Categories] ([CategoryID])
-GO
-ALTER TABLE [dbo].[Products] CHECK CONSTRAINT [FK_Category]
-GO
-USE [master]
-GO
-ALTER DATABASE [OrderManagementPlatform] SET  READ_WRITE 
-GO
+
 
 -- Users (Admin + sample users)
 INSERT INTO Users (UserName, UserPassword, Role)
