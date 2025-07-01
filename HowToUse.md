@@ -25,7 +25,7 @@ Make sure you have the following installed:
 
 ### 3. Set Up the Database
 
-**Option A – Run the Script Manually**
+**Run the Script Manually**
 
 1. Go to the `Database` folder.
 2. Open `OrderManagementPlatform_schema.sql` in SSMS.
